@@ -3,6 +3,9 @@ require "spec_helper"
 describe Slide::Rewriter do
 
   let(:rewriter) { Slide::Rewriter.new }
+  let(:buffer) { Parser::Source::Buffer.new("test") }
+  let(:parser) { Parser::CurrentRuby.new }
+  let(:ast) { parser.parse(buffer) }
 
   describe "#on_if" do
 
@@ -25,15 +28,9 @@ describe Slide::Rewriter do
         end
       |
     end
-    let(:buffer) do
-      buffer = Parser::Source::Buffer.new("test")
-      buffer.source = nested_if
-      buffer
-    end
-    let(:parser) { Parser::CurrentRuby.new }
-    let(:ast) { parser.parse(buffer) }
 
     it "wraps the condition in the existential operator ('?')" do
+      buffer.source = nested_if
       results = rewriter.rewrite(buffer, ast)
       expect(results).to eq(expected)
     end
