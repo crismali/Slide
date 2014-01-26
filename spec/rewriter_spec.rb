@@ -6,6 +6,13 @@ describe Slide::Rewriter do
   let(:buffer) { Parser::Source::Buffer.new("test") }
   let(:parser) { Parser::CurrentRuby.new }
   let(:ast) { parser.parse(buffer) }
+  let(:results) { rewriter.rewrite(buffer, ast) }
+
+  describe "#initialize" do
+    it "sets @block_starts to an empty array" do
+      expect(rewriter.block_starts).to eq([])
+    end
+  end
 
   describe "#on_if" do
 
@@ -24,7 +31,6 @@ EOF
           true
         end
 EOF
-      results = rewriter.rewrite(buffer, ast)
       expect(results).to eq(expected)
     end
 
@@ -51,13 +57,11 @@ EOF
 
       it "when an if" do
         buffer.source = nested_if
-        results = rewriter.rewrite(buffer, ast)
         expect(results).to eq(expected)
       end
 
       it "when an unless" do
         buffer.source = "5 unless nil"
-        results = rewriter.rewrite(buffer, ast)
         expect(results).to eq("5 unless (nil)?")
       end
 
@@ -76,7 +80,6 @@ EOF
             true
           end
 EOF
-        results = rewriter.rewrite(buffer, ast)
         expect(results).to eq(expected)
       end
     end
@@ -101,29 +104,54 @@ EOF
 
     it "puts parentheses after method calls with no arguments" do
       buffer.source = "self.call"
-      results = rewriter.rewrite(buffer, ast)
       expect(results).to eq("self.call()")
+    end
+
+    it "doesn't add parentheses after method calls that already have them but lack arguments" do
+      code = "self.call()"
+      buffer.source = code
+      expect(results).to eq(code)
     end
 
     it "puts parentheses after implicit method calls on self" do
       buffer.source = "invoke"
-      results = rewriter.rewrite(buffer, ast)
-      expect(results).to eq("invoke()")
+      expect(results).to eq("@invoke()")
+    end
+
+    it "puts an '@' before methods implicitly called on self" do
+      buffer.source = "invoke()"
+      expect(results).to eq("@invoke()")
     end
 
     it "puts parentheses around the method's arguments" do
       buffer.source = "invoke arg_1, arg_2"
-      results = rewriter.rewrite(buffer, ast)
-      expect(results).to eq("invoke( arg_1(), arg_2())")
+      expect(results).to eq("@invoke( @arg_1(), @arg_2())")
     end
 
     it "doesn't invoke bracket ('[]') methods" do
       code = "self[5]"
       buffer.source = code
-      results = rewriter.rewrite(buffer, ast)
       expect(results).to eq(code)
     end
 
-    it "puts parentheses around block arguments"
+    it "puts parentheses around block arguments" do
+      buffer.source = "self.map { |x| x.go }"
+      expect(results).to eq("self.map( { |x| x.go() })")
+    end
+
+    it "puts parentheses around block arguments when there are already parentheses" do
+      buffer.source = "self.map() { |x| x.go }"
+      expect(results).to eq("self.map( { |x| x.go() })")
+    end
+
+    it "puts parentheses around regular and block arguments" do
+      buffer.source = "self.each_with_object({}) { |x| x.go }"
+      expect(results).to eq("self.each_with_object({} { |x| x.go() })")
+    end
+
+    xit "puts a comma after the last argument before the block" do
+      buffer.source = "self.each_with_object({}, []) { |x| x.go }"
+      expect(results).to eq("self.each_with_object({}, [], { |x| x.go() })")
+    end
   end
 end
