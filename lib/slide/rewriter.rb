@@ -2,18 +2,20 @@ class Slide::Rewriter < Parser::Rewriter
 
   AT_SIGN = "@"
   CLOSE_PAREN = ")"
+  COMMA = ","
   ELSE_IF = "else if"
   ELSIF = "elsif"
   OPEN_PAREN = "("
   QUESTION_MARK = "?"
   SPACE = " "
+  TWO = 2
 
   BRACKET_WRAP = /\A\[.*\]\z/
 
-  attr_accessor :block_starts
+  attr_accessor :block_start_nodes
 
   def initialize
-    self.block_starts = []
+    self.block_start_nodes = []
   end
 
   def on_if(node)
@@ -30,27 +32,38 @@ class Slide::Rewriter < Parser::Rewriter
     prepend_with_at_sign(node) if node.loc.dot.nil?
 
     if method_parentheses?(node)
-      remove node.loc.end if block_starts.include?(node)
-      return
+      process_send_with_parentheses(node)
+    else
+      process_send_without_parentheses(node)
     end
-
-    insert_after node.loc.selector.end, OPEN_PAREN
-
-    unless block_starts.include?(node)
-      insert_after node.loc.expression.end, CLOSE_PAREN
-    end
-
   end
 
-
   def on_block(node)
-    self.block_starts << node.children.first
+    self.block_start_nodes << node.children.first
     super
     insert_after node.loc.end, CLOSE_PAREN
-    self.block_starts.pop
+    # self.block_start_nodes.pop
   end
 
   private
+
+  def process_send_with_parentheses(node)
+    if block_start_node?(node)
+      remove node.loc.end
+      insert_after node.loc.end, COMMA if node.children.size > TWO
+    end
+  end
+
+  def process_send_without_parentheses(node)
+    insert_after node.loc.selector.end, OPEN_PAREN
+    unless block_start_node?(node)
+      insert_after node.loc.expression.end, CLOSE_PAREN
+    end
+  end
+
+  def block_start_node?(node)
+    block_start_nodes.include?(node)
+  end
 
   def prepend_with_at_sign(node)
     insert_before node.loc.expression, AT_SIGN

@@ -9,8 +9,8 @@ describe Slide::Rewriter do
   let(:results) { rewriter.rewrite(buffer, ast) }
 
   describe "#initialize" do
-    it "sets @block_starts to an empty array" do
-      expect(rewriter.block_starts).to eq([])
+    it "sets @block_start_nodes to an empty array" do
+      expect(rewriter.block_start_nodes).to eq([])
     end
   end
 
@@ -99,7 +99,6 @@ EOF
     end
   end
 
-
   describe "#on_send" do
 
     it "puts parentheses after method calls with no arguments" do
@@ -146,10 +145,10 @@ EOF
 
     it "puts parentheses around regular and block arguments" do
       buffer.source = "self.each_with_object({}) { |x| x.go }"
-      expect(results).to eq("self.each_with_object({} { |x| x.go() })")
+      expect(results).to eq("self.each_with_object({}, { |x| x.go() })")
     end
 
-    xit "puts a comma after the last argument before the block" do
+    it "puts a comma after the last argument before the block" do
       buffer.source = "self.each_with_object({}, []) { |x| x.go }"
       expect(results).to eq("self.each_with_object({}, [], { |x| x.go() })")
     end
