@@ -41,7 +41,8 @@ class Slide::Rewriter < Parser::Rewriter
   def on_block(node)
     self.block_start_nodes << node.children.first
     super
-    insert_after node.loc.end, CLOSE_PAREN
+    remove node.loc.begin
+    replace node.loc.end, CLOSE_PAREN
     # self.block_start_nodes.pop
   end
 

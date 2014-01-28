@@ -135,22 +135,50 @@ EOF
 
     it "puts parentheses around block arguments" do
       buffer.source = "self.map { |x| x.go }"
-      expect(results).to eq("self.map( { |x| x.go() })")
+      expect(results).to eq("self.map(  |x| x.go() )")
     end
 
     it "puts parentheses around block arguments when there are already parentheses" do
       buffer.source = "self.map() { |x| x.go }"
-      expect(results).to eq("self.map( { |x| x.go() })")
+      expect(results).to eq("self.map(  |x| x.go() )")
     end
 
     it "puts parentheses around regular and block arguments" do
       buffer.source = "self.each_with_object({}) { |x| x.go }"
-      expect(results).to eq("self.each_with_object({}, { |x| x.go() })")
+      expect(results).to eq("self.each_with_object({},  |x| x.go() )")
     end
 
     it "puts a comma after the last argument before the block" do
       buffer.source = "self.each_with_object({}, []) { |x| x.go }"
-      expect(results).to eq("self.each_with_object({}, [], { |x| x.go() })")
+      expect(results).to eq("self.each_with_object({}, [],  |x| x.go() )")
+    end
+  end
+
+  describe "#on_block" do
+
+    context "do-end" do
+
+      it "removes the do and end" do
+        buffer.source = <<EOF
+        self.map do |thing|
+          thing.go
+        end
+EOF
+        expected = <<EOF
+        self.map(  |thing|
+          thing.go()
+        )
+EOF
+        expect(results).to eq(expected)
+      end
+    end
+
+    context "curly braces" do
+
+      it "removes the braces" do
+        buffer.source = "self.takes_a_block { self.go }"
+        expect(results).to eq("self.takes_a_block(  self.go() )")
+      end
     end
   end
 end
