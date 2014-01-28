@@ -50,8 +50,14 @@ class Slide::Rewriter < Parser::Rewriter
   def on_args(node)
     super
     return if node.loc.expression.nil?
-    replace node.loc.begin, OPEN_PAREN
-    replace node.loc.end, (CLOSE_PAREN + SPACE + FAT_ARROW)
+
+    if node.loc.begin.nil?
+      insert_before node.loc.expression, OPEN_PAREN
+      insert_after node.loc.expression, (CLOSE_PAREN + SPACE + FAT_ARROW)
+    else
+      replace node.loc.begin, (SPACE + OPEN_PAREN)
+      replace node.loc.end, (CLOSE_PAREN + SPACE + FAT_ARROW)
+    end
   end
 
   private
