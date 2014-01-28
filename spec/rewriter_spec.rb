@@ -135,23 +135,46 @@ EOF
 
     it "puts parentheses around block arguments" do
       buffer.source = "self.map { |x| x.go }"
-      expect(results).to eq("self.map(  |x| x.go() )")
+      expect(results).to eq("self.map(  (x) => x.go() )")
     end
 
     it "puts parentheses around block arguments when there are already parentheses" do
       buffer.source = "self.map() { |x| x.go }"
-      expect(results).to eq("self.map(  |x| x.go() )")
+      expect(results).to eq("self.map(  (x) => x.go() )")
     end
 
     it "puts parentheses around regular and block arguments" do
       buffer.source = "self.each_with_object({}) { |x| x.go }"
-      expect(results).to eq("self.each_with_object({},  |x| x.go() )")
+      expect(results).to eq("self.each_with_object({},  (x) => x.go() )")
     end
 
     it "puts a comma after the last argument before the block" do
       buffer.source = "self.each_with_object({}, []) { |x| x.go }"
-      expect(results).to eq("self.each_with_object({}, [],  |x| x.go() )")
+      expect(results).to eq("self.each_with_object({}, [],  (x) => x.go() )")
     end
+  end
+
+  describe "#on_args" do
+
+    context "blocks" do
+
+      it "removes the pipes ('|obj|')" do
+        buffer.source = "self.map { |obj| obj.to_s }"
+        expect(results).to eq("self.map(  (obj) => obj.to_s() )")
+      end
+
+      it "adds a fat arrow after them" do
+        buffer.source = "self.map { |obj| obj.to_s }"
+        expect(results).to eq("self.map(  (obj) => obj.to_s() )")
+      end
+
+      it "wraps the arguments in parentheses" do
+        buffer.source = "self.map { |obj| obj.to_s }"
+        expect(results).to eq("self.map(  (obj) => obj.to_s() )")
+      end
+
+    end
+
   end
 
   describe "#on_block" do
@@ -165,7 +188,7 @@ EOF
         end
 EOF
         expected = <<EOF
-        self.map(  |thing|
+        self.map(  (thing) =>
           thing.go()
         )
 EOF

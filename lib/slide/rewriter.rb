@@ -5,6 +5,7 @@ class Slide::Rewriter < Parser::Rewriter
   COMMA = ","
   ELSE_IF = "else if"
   ELSIF = "elsif"
+  FAT_ARROW = "=>"
   OPEN_PAREN = "("
   QUESTION_MARK = "?"
   SPACE = " "
@@ -44,6 +45,13 @@ class Slide::Rewriter < Parser::Rewriter
     remove node.loc.begin
     replace node.loc.end, CLOSE_PAREN
     # self.block_start_nodes.pop
+  end
+
+  def on_args(node)
+    super
+    return if node.loc.expression.nil?
+    replace node.loc.begin, OPEN_PAREN
+    replace node.loc.end, (CLOSE_PAREN + SPACE + FAT_ARROW)
   end
 
   private
