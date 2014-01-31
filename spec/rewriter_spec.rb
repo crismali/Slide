@@ -196,11 +196,6 @@ EOF
           thing.go
         end
 EOF
-        expected = <<EOF
-        self.map(   (thing) =>
-          thing.go()
-        )
-EOF
         expect(results).to_not match("do")
         expect(results).to_not match("end")
       end
