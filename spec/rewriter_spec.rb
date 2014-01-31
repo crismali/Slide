@@ -24,14 +24,8 @@ describe Slide::Rewriter do
           true
         end
 EOF
-      expected = <<EOF
-        if (self)?
-          true
-        else if (5)?
-          true
-        end
-EOF
-      expect(results).to eq(expected)
+      expect(results).to_not match("elsif")
+      expect(results).to match("else if")
     end
 
     context "wrapping conditions in existential operator (?)" do
@@ -73,8 +67,7 @@ EOF
             true
           end
 EOF
-        expect(results).to_not match("elsif")
-        expect(results).to match("else if")
+        expect(results).to match(/\(5\)\?/)
       end
     end
   end
@@ -177,23 +170,15 @@ EOF
         def my_method arg
         end
 EOF
-        expected = <<EOF
-        def my_method (arg) =>
-        end
-EOF
-        expect(results).to eq(expected)
+        expect(results).to match(/\s\(arg\)/)
       end
 
-      it "leaves parentheses when they are already there" do
+      it "leaves parentheses when they are already there (but adds a space)" do
         buffer.source = <<EOF
         def my_method(arg)
         end
 EOF
-        expected = <<EOF
-        def my_method (arg) =>
-        end
-EOF
-        expect(results).to eq(expected)
+        expect(results).to match(/\s\(arg\)/)
       end
 
       it "adds a fat arrow after them (parens already there)" do
@@ -229,7 +214,8 @@ EOF
           thing.go()
         )
 EOF
-        expect(results).to eq(expected)
+        expect(results).to_not match("do")
+        expect(results).to_not match("end")
       end
     end
 
@@ -237,7 +223,8 @@ EOF
 
       it "removes the braces" do
         buffer.source = "self.takes_a_block { self.go }"
-        expect(results).to eq("self.takes_a_block(  self.go() )")
+        expect(results).to_not match(/\{/)
+        expect(results).to_not match(/\}/)
       end
     end
   end
