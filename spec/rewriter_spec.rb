@@ -29,29 +29,16 @@ EOF
     end
 
     context "wrapping conditions in existential operator (?)" do
-      let(:nested_if) do
-        %|
-          if (5 if nil)
-            true
-          else
-            false
-          end
-        |
-      end
-
-      let(:expected) do
-        %|
-          if ((5 if (nil)?))?
-            true
-          else
-            false
-          end
-        |
-      end
 
       it "when an if" do
-        buffer.source = nested_if
-        expect(results).to eq(expected)
+        buffer.source = <<EOF
+        if (5 if nil)
+          true
+        else
+          false
+        end
+EOF
+        expect(results).to match(/\(\(5 if \(nil\)\?\)\)\?/)
       end
 
       it "when an unless" do
