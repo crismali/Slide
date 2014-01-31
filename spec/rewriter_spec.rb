@@ -73,14 +73,8 @@ EOF
             true
           end
 EOF
-        expected = <<EOF
-          if (self)?
-            true
-          else if (5)?
-            true
-          end
-EOF
-        expect(results).to eq(expected)
+        expect(results).to_not match("elsif")
+        expect(results).to match("else if")
       end
     end
   end
@@ -133,24 +127,25 @@ EOF
       expect(results).to eq(code)
     end
 
-    it "puts parentheses around block arguments" do
-      buffer.source = "self.map { |x| x.go }"
-      expect(results).to eq("self.map(   (x) => x.go() )")
+    it "puts parentheses around blocks " do
+      buffer.source = "self.map { |x| x }"
+      expect(results).to match(/map\(.*\)/)
     end
 
-    it "puts parentheses around block arguments when there are already parentheses" do
-      buffer.source = "self.map() { |x| x.go }"
-      expect(results).to eq("self.map(   (x) => x.go() )")
+    it "puts parentheses around blocks when there are already parentheses" do
+      buffer.source = "self.map() { |x| x }"
+      expect(results).to eq("self.map(   (x) => x )")
+      expect(results).to match(/map\(.*x.*=>.*\)/)
     end
 
-    it "puts parentheses around regular and block arguments" do
-      buffer.source = "self.each_with_object({}) { |x| x.go }"
-      expect(results).to eq("self.each_with_object({},   (x) => x.go() )")
+    it "puts parentheses around regular arguments and blocks" do
+      buffer.source = "self.each_with_object({}) { |x| x }"
+      expect(results).to match(/_object\({}[^\)].*x\s\)/)
     end
 
     it "puts a comma after the last argument before the block" do
-      buffer.source = "self.each_with_object({}, []) { |x| x.go }"
-      expect(results).to eq("self.each_with_object({}, [],   (x) => x.go() )")
+      buffer.source = "self.each_with_object({}, []) { |x| x }"
+      expect(results).to match(/\[\]\,/)
     end
   end
 
@@ -160,17 +155,17 @@ EOF
 
       it "removes the pipes ('|obj|')" do
         buffer.source = "self.map { |obj| obj.to_s }"
-        expect(results).to eq("self.map(   (obj) => obj.to_s() )")
+        expect(results).to_not match(/\|obj\|/)
       end
 
       it "adds a fat arrow after them" do
         buffer.source = "self.map { |obj| obj.to_s }"
-        expect(results).to eq("self.map(   (obj) => obj.to_s() )")
+        expect(results).to match("=>")
       end
 
       it "wraps the arguments in parentheses" do
         buffer.source = "self.map { |obj| obj.to_s }"
-        expect(results).to eq("self.map(   (obj) => obj.to_s() )")
+        expect(results).to match(/\(obj\)/)
       end
 
     end
@@ -206,11 +201,7 @@ EOF
         def my_method(arg)
         end
 EOF
-        expected = <<EOF
-        def my_method (arg) =>
-        end
-EOF
-        expect(results).to eq(expected)
+        expect(results).to match("\=\>")
       end
 
       it "adds a fat arrow after them (no parens)" do
@@ -218,11 +209,7 @@ EOF
         def my_method arg
         end
 EOF
-        expected = <<EOF
-        def my_method (arg) =>
-        end
-EOF
-        expect(results).to eq(expected)
+        expect(results).to match("\=\>")
       end
     end
   end
