@@ -40,11 +40,11 @@ class Slide::Rewriter < Parser::Rewriter
   end
 
   def on_block(node)
-    self.block_start_nodes << node.children.first
+    block_start_nodes << node.children.first
     super
     remove node.loc.begin
     replace node.loc.end, CLOSE_PAREN
-    # self.block_start_nodes.pop
+    block_start_nodes.pop
   end
 
   def on_args(node)
@@ -77,7 +77,7 @@ class Slide::Rewriter < Parser::Rewriter
   end
 
   def block_start_node?(node)
-    block_start_nodes.include?(node)
+    block_start_nodes.last == node
   end
 
   def prepend_with_at_sign(node)

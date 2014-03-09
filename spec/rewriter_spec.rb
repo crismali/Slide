@@ -14,6 +14,15 @@ describe Slide::Rewriter do
     end
   end
 
+  describe "#block_start_nodes" do
+
+    it "empties block start nodes as they're used" do
+      buffer.source = "code.start { |n| n += 2 }"
+      results
+      expect(rewriter.block_start_nodes).to eq([])
+    end
+  end
+
   describe "#on_if" do
 
     it "converts elsif to 'else if'" do
