@@ -3,6 +3,7 @@ class Slide::Rewriter < Parser::Rewriter
   AT_SIGN = "@"
   CLOSE_PAREN = ")"
   COMMA = ","
+  ELIPSES = "..."
   ELSE_IF = "else if"
   ELSIF = "elsif"
   FAT_ARROW = "=>"
@@ -59,6 +60,12 @@ class Slide::Rewriter < Parser::Rewriter
       replace node.loc.begin, (SPACE + OPEN_PAREN)
       replace node.loc.end, (CLOSE_PAREN + SPACE + FAT_ARROW + NEW_LINE)
     end
+  end
+
+  def on_splat(node)
+    super
+    remove node.loc.operator
+    insert_after node.loc.expression, ELIPSES
   end
 
   private

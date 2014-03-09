@@ -194,6 +194,14 @@ EOF
     end
   end
 
+  describe "#on_splat" do
+
+    it "converts splats to '...'" do
+      buffer.source = "self.invoke(*planets)"
+      expect(results).to eq("self.invoke(@planets()...)")
+    end
+  end
+
   describe "#on_block" do
 
     context "do-end" do
