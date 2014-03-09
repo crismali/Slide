@@ -123,13 +123,12 @@ EOF
 
     it "puts parentheses around blocks when there are already parentheses" do
       buffer.source = "self.map() { |x| x }"
-      expect(results).to eq("self.map(   (x) => x )")
-      expect(results).to match(/map\(.*x.*=>.*\)/)
+      expect(results).to match(/map\(.*x.*=>.*\)/m)
     end
 
     it "puts parentheses around regular arguments and blocks" do
       buffer.source = "self.each_with_object({}) { |x| x }"
-      expect(results).to match(/_object\({}[^\)].*x\s\)/)
+      expect(results).to match(/_object\({}[^\)].*x\s\)/m)
     end
 
     it "puts a comma after the last argument before the block" do
@@ -144,12 +143,12 @@ EOF
 
       it "removes the pipes ('|obj|')" do
         buffer.source = "self.map { |obj| obj.to_s }"
-        expect(results).to_not match(/\|obj\|/)
+        expect(results).to_not match(/\|/)
       end
 
-      it "adds a fat arrow after them" do
+      it "adds a fat arrow and newline after them" do
         buffer.source = "self.map { |obj| obj.to_s }"
-        expect(results).to match("=>")
+        expect(results).to match("\=\>\n")
       end
 
       it "wraps the arguments in parentheses" do

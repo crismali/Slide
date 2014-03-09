@@ -6,6 +6,7 @@ class Slide::Rewriter < Parser::Rewriter
   ELSE_IF = "else if"
   ELSIF = "elsif"
   FAT_ARROW = "=>"
+  NEW_LINE = "\n"
   OPEN_PAREN = "("
   QUESTION_MARK = "?"
   SPACE = " "
@@ -53,10 +54,10 @@ class Slide::Rewriter < Parser::Rewriter
 
     if node.loc.begin.nil?
       insert_before node.loc.expression, OPEN_PAREN
-      insert_after node.loc.expression, (CLOSE_PAREN + SPACE + FAT_ARROW)
+      insert_after node.loc.expression, (CLOSE_PAREN + SPACE + FAT_ARROW + NEW_LINE)
     else
       replace node.loc.begin, (SPACE + OPEN_PAREN)
-      replace node.loc.end, (CLOSE_PAREN + SPACE + FAT_ARROW)
+      replace node.loc.end, (CLOSE_PAREN + SPACE + FAT_ARROW + NEW_LINE)
     end
   end
 
