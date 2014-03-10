@@ -202,6 +202,13 @@ EOF
     end
   end
 
+  describe "#on_restarg" do
+    it "converts splats to '...'" do
+      buffer.source = "def my_method(arg, arg2, *args) end"
+      expect(results).to match(/,\s\sargs\.\.\./)
+    end
+  end
+
   describe "#on_block" do
 
     context "do-end" do

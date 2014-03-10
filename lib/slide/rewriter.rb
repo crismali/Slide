@@ -11,6 +11,7 @@ class Slide::Rewriter < Parser::Rewriter
   OPEN_PAREN = "("
   QUESTION_MARK = "?"
   SPACE = " "
+  SPLAT = "*"
   TWO = 2
 
   BRACKET_WRAP = /\A\[.*\]\z/
@@ -66,6 +67,12 @@ class Slide::Rewriter < Parser::Rewriter
     super
     remove node.loc.operator
     insert_after node.loc.expression, ELIPSES
+  end
+
+  def on_restarg(node)
+    super
+    replacement = node.loc.expression.source.gsub(SPLAT, SPACE) + ELIPSES
+    replace node.loc.expression, replacement
   end
 
   private
