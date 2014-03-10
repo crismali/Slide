@@ -86,13 +86,12 @@ EOF
 
     it "puts parentheses after method calls with no arguments" do
       buffer.source = "self.call"
-      expect(results).to eq("self.call()")
+      expect(results).to eq("this.call()")
     end
 
     it "doesn't add parentheses after method calls that already have them but lack arguments" do
-      code = "self.call()"
-      buffer.source = code
-      expect(results).to eq(code)
+      buffer.source = "self.call()"
+      expect(results).to eq("this.call()")
     end
 
     it "puts parentheses after implicit method calls on self" do
@@ -111,9 +110,8 @@ EOF
     end
 
     it "doesn't invoke bracket ('[]') methods" do
-      code = "self[5]"
-      buffer.source = code
-      expect(results).to eq(code)
+      buffer.source = "self[5]"
+      expect(results).to eq("this[5]")
     end
 
     it "puts parentheses around blocks " do
@@ -198,7 +196,7 @@ EOF
 
     it "converts splats to '...'" do
       buffer.source = "self.invoke(*planets)"
-      expect(results).to eq("self.invoke(@planets()...)")
+      expect(results).to eq("this.invoke(@planets()...)")
     end
   end
 
@@ -206,6 +204,14 @@ EOF
     it "converts splats to '...'" do
       buffer.source = "def my_method(arg, arg2, *args) end"
       expect(results).to match(/,\s\sargs\.\.\./)
+    end
+  end
+
+  describe "#on_self" do
+
+    it "converts 'self' to 'this'" do
+      buffer.source = "self"
+      expect(results).to eq("this")
     end
   end
 
