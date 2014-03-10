@@ -209,6 +209,27 @@ EOF
     end
   end
 
+  describe "#on_def" do
+    before do
+      buffer.source = %|
+        def my_method(arg, arg2)
+        end
+      |
+    end
+
+    it "removes the def" do
+      expect(results).to_not match("def")
+    end
+
+    it "removes the end" do
+      expect(results).to_not match("end")
+    end
+
+    it "puts a colone after the name" do
+      expect(results).to match(/my_method\:/)
+    end
+  end
+
   describe "#on_restarg" do
     it "converts splats to '...'" do
       buffer.source = "def my_method(arg, arg2, *args) end"

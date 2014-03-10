@@ -2,6 +2,7 @@ class Slide::Rewriter < Parser::Rewriter
 
   AT_SIGN = "@"
   CLOSE_PAREN = ")"
+  COLON = ":"
   COMMA = ","
   ELIPSES = "..."
   ELSE_IF = "else if"
@@ -84,6 +85,14 @@ class Slide::Rewriter < Parser::Rewriter
   def on_or_asgn(node)
     super
     replace node.loc.operator, (QUESTION_MARK + EQUAL_SIGN)
+  end
+
+  def on_def(node)
+    super
+    loc = node.loc
+    remove loc.keyword
+    remove loc.end
+    replace loc.name, (loc.name.source + COLON)
   end
 
   private
