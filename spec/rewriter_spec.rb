@@ -200,6 +200,15 @@ EOF
     end
   end
 
+  describe "#on_or_asgn" do
+
+    it "uses the existential operator for ||=" do
+      buffer.source = "dog ||= 5"
+      expect(results).to_not match(/\|\|\=/)
+      expect(results).to match(/\?\=/)
+    end
+  end
+
   describe "#on_restarg" do
     it "converts splats to '...'" do
       buffer.source = "def my_method(arg, arg2, *args) end"

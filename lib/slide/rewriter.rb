@@ -6,6 +6,7 @@ class Slide::Rewriter < Parser::Rewriter
   ELIPSES = "..."
   ELSE_IF = "else if"
   ELSIF = "elsif"
+  EQUAL_SIGN = "="
   FAT_ARROW = "=>"
   NEW_LINE = "\n"
   OPEN_PAREN = "("
@@ -78,6 +79,11 @@ class Slide::Rewriter < Parser::Rewriter
 
   def on_self(node)
     replace node.loc.expression, THIS
+  end
+
+  def on_or_asgn(node)
+    super
+    replace node.loc.operator, (QUESTION_MARK + EQUAL_SIGN)
   end
 
   private
